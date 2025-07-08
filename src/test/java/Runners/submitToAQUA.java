@@ -35,11 +35,12 @@ public class submitToAQUA extends Setup {
         customersPage.clickCustomersNav();
         String logtime = customersPage.clickNewCusButton();
         customersPage.insertQualifyInfos("7604","0","Euless","TX","4/1/56","100000102","8004444444","shrestta.qa@gmail.com");
-        System.out.println(logtime);
-        System.out.println(driver.findElement(By.xpath("//tr[contains(@class,'info-table-tr')]/td[contains(text(),'Creation Date')]/following-sibling::td")).getText());
+        System.out.println("Creation tym from edit= "+logtime);
+        System.out.println("Creation time from overview = "+driver.findElement(By.xpath("//tr[contains(@class,'info-table-tr')]/td[contains(text(),'Creation Date')]/following-sibling::td")).getText());
         softAssert.assertTrue(driver.findElement(By.xpath("//tr[contains(@class,'info-table-tr')]/td[contains(text(),'Creation Date')]/following-sibling::td")).getText().contains(logtime),"Customer creation time is not showing right");
-        softAssert.assertTrue(driver.getCurrentUrl().contains("/customer/customerdetail?id="),"Customer details url is showing properly");
+        softAssert.assertTrue(driver.getCurrentUrl().contains("/Customer/Customerdetail/?id="),"Customer details url is showing properly");
         softAssert.assertTrue(driver.getCurrentUrl().split("=")[1].trim().contains(driver.findElement(By.xpath("//tr[contains(@class,'info-table-tr')]/td[contains(text(),'Id')]/following-sibling::td")).getText()),"Customer id is showing");
+        Thread.sleep(2000);
         customersPage.clickEditCustomerDetails();
         softAssert.assertTrue(driver.findElement(By.id("CoreHomeCoApplicant_Street")).getAttribute("value").contains(""),"Co-Applicant's Street field is blank initially");
         softAssert.assertTrue(driver.findElement(By.id("CoreHomeCoApplicant_ZipCode")).getAttribute("value").contains(""),"Co-Applicant's ZipCode field is blank initially");
@@ -49,7 +50,7 @@ public class submitToAQUA extends Setup {
         softAssert.assertAll();
     }
     @Test(priority = 3)
-    public void insertProposal(){
+    public void insertProposal() throws InterruptedException, ParseException, IOException {
         SoftAssert softAssert = new SoftAssert();
         CustomersPage customersPage =new CustomersPage(driver);
         customersPage.createProposal("14","4");
