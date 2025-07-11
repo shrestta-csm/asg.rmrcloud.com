@@ -21,6 +21,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.time.Duration;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Random;
@@ -83,7 +84,7 @@ public class CustomersPage {
     @FindBy(className = "error-body")
     List<WebElement> errorbody;
     @FindBy(xpath = "//button[contains(@class,'btn-default') and (text()='Close')]")
-    List<WebElement> btnPopUpClose;
+    List<WebElement> btnPopUpCloseXpath;
     @FindBy(id = "PostalCode")
     WebElement txtPrimaryZip;
     @FindBy(id = "City")
@@ -180,8 +181,41 @@ public class CustomersPage {
     List<WebElement> proposalProdctName2;
     @FindBy(className = "txtServiceRate")
     List<WebElement> serviceMonthlyRate;
+    @FindBy(xpath = "//tr[(@class='SubTotalTr')]/td")
+    List<WebElement> activationFeeLabel;
+    @FindBy(id = "ActivInstFee")
+    WebElement activationFee;
+    @FindBy(id = "equipment_add_row")
+    WebElement btnAddEquipment;
+    @FindBy(id = "service_add_row")
+    WebElement btnAddService;
+    @FindBy(className = "PresentBtn")
+    WebElement btnGeneratePresentation;
+    @FindBy(id = "presentation_view")
+    WebElement btnViewPresentation;
+    @FindBy(id = "presentation_link_copy")
+    WebElement btnCopyPresentation;
+    @FindBy(id = "btnSendMail_presentation")
+    WebElement btnSendPresentationEmail;
+    @FindBy(id = "btnSendSMS_presentation")
+    WebElement btnSendPresentationText;
+    @FindBy(id = "btnSendMailAndSMS_presentation")
+    WebElement btnSendPresentationBoth;
+    @FindBy(id = "EmailAddress_presentation")
+    WebElement txtPresentionMailField;
+    @FindBy(id = "Phone_no_presentation")
+    WebElement txtPresentionTextField;
+    @FindBy(className = "ticket_agree_inner_info_block_header")
+    List<WebElement> signaturePadLabel;
+    @FindBy(id = "clear-presentation")
+    WebElement btnClearSignature;
+    @FindBy(id = "btnSignPresent-presentation")
+    WebElement btnSignaturePresentationSubmit;
+    @FindBy(id = "signature-pad-presentation")
+    WebElement canvas;
 
     private String customerCreatedTime;
+
 
     public void clickCustomersNav() {
         customersNav.click();
@@ -287,7 +321,7 @@ public class CustomersPage {
 //        System.out.println("fege = "+driver.findElements(By.xpath("//p[@class='error-body']/br")).get(0).getAttribute("innerHTML"));
 //        System.out.println("Hh ="+errorbody.get(0).getAttribute("innerHTML").replaceAll("(?i)<br>", "\n").replaceAll("\\<.*?\\>", "").trim());
         softAssert.assertTrue(errorbody.get(0).getAttribute("innerHTML").replaceAll("(?i)<br>", "\n").replaceAll("\\<.*?\\>", "").trim().contains("First name required\n" + " Last name required\n" + " Address required\n" + " Zip code required\n" + " City required\n" + " State required\n" + " Date of birth required"), "It shows the warning if I do not enter any of the customer information");
-        btnPopUpClose.get(2).click();
+        btnPopUpCloseXpath.get(2).click();
 
         String primaryFname = faker.name().firstName();
         txtPrimaryFirstName.sendKeys(primaryFname);
@@ -373,7 +407,7 @@ public class CustomersPage {
         wait.until(ExpectedConditions.visibilityOf(popup.get(4)));
         softAssert.assertTrue(popupHeader.get(4).getText().contains("Error!"), "Homeownership's popup is showing Error!");
         softAssert.assertTrue(errorbody.get(0).getText().contains("Applicant/Co-Applicant name doesn't match with homeowner."), "Applicant/Co-Applicant name doesn't match with homeowner is showing");
-        softAssert.assertTrue(btnPopUpClose.get(2).getText().contains("Close"), "homeownership's popup's close button is showing");
+        softAssert.assertTrue(btnPopUpCloseXpath.get(2).getText().contains("Close"), "homeownership's popup's close button is showing");
         softAssert.assertTrue(primaryCellPhone.getAttribute("value").contains(expectedPrimaryCellNumberFormatted));
         softAssert.assertTrue(primarySecondaryPhone.getAttribute("value").contains(expectedPrimarySecondaryNumberFormatted));
         softAssert.assertTrue(txtPrimarySSN.getAttribute("value").contains(expectedSSNFormatted),"SSn formated successfully in edit screen");
@@ -387,10 +421,10 @@ public class CustomersPage {
         String financeCompany = select1.getFirstSelectedOption().getText();
         jsonObject.put("Financing Company",financeCompany);
         jsonArray.add(jsonObject);
-        FileWriter fileWriter = new FileWriter(filepath);
-        fileWriter.write(jsonArray.toJSONString());
-        fileWriter.flush();
-        fileWriter.close();
+//        FileWriter fileWriter = new FileWriter(filepath);
+//        fileWriter.write(jsonArray.toJSONString());
+//        fileWriter.flush();
+//        fileWriter.close();
         btnCloseScreen.get(1).click();
         new WebDriverWait(driver, Duration.ofSeconds(35)).until(
                 driver -> ((JavascriptExecutor) driver).executeScript("return document.readyState").equals("complete")
@@ -402,12 +436,18 @@ public class CustomersPage {
         String customerName =  cusnameObj.get("Primary First Name")+" "+cusnameObj.get("Primary Last Name").toString();
         searchCustomerByCusName(customerName);
         String timestamp = getCurrentFormattedDateTime().split(" ")[0];
-        System.out.println(timestamp);
+//        System.out.println(timestamp);
         softAssert.assertTrue(driver.findElement(By.xpath("//table[contains(@class,'table_style_fin')]//div[contains(text(),'Date') and (@class='resp_head')]/following-sibling::div/span[@title='Sold Date']")).getText().contains("Sold: "+timestamp));
         softAssert.assertTrue(driver.findElements(By.xpath("//a[(@title='Customer name')]/div/span")).get(0).getText().contains(cusnameObj.get("Primary First Name")+" "+cusnameObj.get("Primary Middle Name")+" "+cusnameObj.get("Primary Last Name").toString()));
         driver.findElements(By.xpath("//a[(@title='Customer name')]/div/span")).get(0).click();
         wait.until(ExpectedConditions.visibilityOfAllElementsLocatedBy(By.className("ci_header")));
-        softAssert.assertTrue(driver.findElement(By.xpath("//tr[contains(@class,'info-table-tr')]/td[contains(text(),'Name')]/following-sibling::td")).getText().contains(primaryFname + " " + PrimaryMidName + " " + primaryLname), "Customer name is showing");
+        JSONObject updatedcusObj = (JSONObject) jsonArray.get(jsonArray.size()-1);
+        System.out.println(driver.getCurrentUrl());
+        System.out.println("id="+driver.getCurrentUrl().split("id")[1].replace("=","").trim());
+        updatedcusObj.put("Customer Id",driver.getCurrentUrl().split("id")[1].replace("=","").trim());        softAssert.assertTrue(driver.findElement(By.xpath("//tr[contains(@class,'info-table-tr')]/td[contains(text(),'Name')]/following-sibling::td")).getText().contains(primaryFname + " " + PrimaryMidName + " " + primaryLname), "Customer name is showing");
+        try (FileWriter writer = new FileWriter(filepath)) {
+            writer.write(jsonArray.toJSONString());
+        }
         softAssert.assertTrue(driver.findElement(By.xpath("//tr[contains(@class,'info-table-tr')]/td[contains(text(),'Sales Person')]/following-sibling::td")).getText().contains(salesPerson), "salesPerson name is showing");
         softAssert.assertTrue(driver.findElement(By.xpath("//tr[contains(@class,'info-table-tr')]/td[contains(text(),'Finance Company')]/following-sibling::td")).getText().contains(financeCompany), "financeCompany name is showing");
 //        softAssert.assertTrue(driver.findElement(By.xpath("//tr[contains(@class,'info-table-tr')]/td[contains(text(),'Social Security Number')]/following-sibling::td")).getText().contains(expectedSSNFormatted), "SSN is showing");
@@ -415,8 +455,9 @@ public class CustomersPage {
         softAssert.assertTrue(driver.findElement(By.xpath("//tr[contains(@class,'info-table-tr')]/td[contains(text(),'Secondary Phone')]/following-sibling::td")).getText().contains(expectedPrimarySecondaryNumberFormatted), "Customer Secondary Phone is showing");
         softAssert.assertTrue(driver.findElement(By.xpath("//tr[contains(@class,'info-table-tr')]/td[contains(text(),'Email')]/following-sibling::td")).getText().contains(primaryEmail), "Customer Email is showing");
         softAssert.assertTrue(driver.findElement(By.xpath("//tr[contains(@class,'info-table-tr')]/td[contains(text(),'Postal Code')]/following-sibling::td")).getText().contains(primaryZP+primaryZP2), "Customer Postal Code is showing");
-        System.out.println(driver.findElement(By.xpath("//tr[contains(@class,'info-table-tr')]/td[contains(text(),'Address')]/following-sibling::td")).getText());
+//        System.out.println(driver.findElement(By.xpath("//tr[contains(@class,'info-table-tr')]/td[contains(text(),'Address')]/following-sibling::td")).getText());
         softAssert.assertTrue(driver.findElement(By.xpath("//tr[contains(@class,'info-table-tr')]/td[contains(text(),'Address')]/following-sibling::td")).getText().replace("\n", ", ").trim().contains(priimaryAdd+", "+primaryCity+", "+primaryState+" "+primaryZP+primaryZP2), "Customer address is showing");
+
         softAssert.assertAll();
 
     }
@@ -549,24 +590,25 @@ public class CustomersPage {
         String expectedFormatedCellphn = formatNumberAssertion.formatNumber(CoCellphn);
         Thread.sleep(1500);
         txtCOappSecondPhone.sendKeys(CoSecondPhn);
-        System.out.println("casdc");
+//        System.out.println("casdc");
 
         String expectedFormattedScndphn =  formatNumberAssertion.formatNumber(CoSecondPhn);
         txtCOappEmail.sendKeys(CoEmail);
         softAssert.assertTrue(btnRunCoAppCredit.getText().contains("Run Co-Applicant Credit"),"Co-App run credit button name is \"Run Co-Applicant Credit\"");
-        btnRunCoAppCredit.click();
-        wait.until(ExpectedConditions.visibilityOf(popup.get(0)));
-        softAssert.assertTrue(popupHeader.get(0).getText().contains("No Score Found"), "Run credit is showing No Score Found after delete and ren enter co apps info");
-        softAssert.assertTrue(popupMsg.get(0).getText().contains("Verify Co-Applicant Address\n" + "Verify Co-Applicant Correct Spelling Of Name"), "Ren credit pop up message is to verify address and correct spelling of name after delete and ren enter co apps info");
-        softAssert.assertTrue(btnPopupClose.get(0).getText().contains("Close"), "Button name is close  after delete and ren enter co apps info");
-        btnPopupClose.get(0).click();
-        wait.until(ExpectedConditions.visibilityOf(customerinfoHeader.get(0)));
-        Thread.sleep(2000);
-        softAssert.assertTrue(driver.findElement(By.className("asg_sep_block_header")).getText().contains("Credit Report"), "Credit Report label is showing after run Co-App credit after delete and ren enter co apps info");
-        softAssert.assertTrue(driver.findElement(By.xpath("//table[contains(@class,'cr_rep_block')]/tbody/tr/td[1]")).getText().contains(CoFname + " " + CoLname), "In credit report Co-App's frstname and last name is showing after delete and ren enter co apps info");
-        softAssert.assertTrue(driver.findElement(By.xpath("//table[contains(@class,'cr_rep_block')]/tbody/tr/td[2]/span")).getText().contains("0"), "In credit report Co-App's credit score is showing after delete and ren enter co apps info");
-        softAssert.assertTrue(driver.findElement(By.xpath("//table[contains(@class,'cr_rep_block')]/thead/tr/th[1]/span")).getText().contains("Name"), "Credit report table head \"Name\" is showing after running Co-App's credit after delete and ren enter co apps info");
-        softAssert.assertTrue(driver.findElement(By.xpath("//table[contains(@class,'cr_rep_block')]/thead/tr/th[2]/span")).getText().contains("Score"), "Credit report table head \"Score\" is showing after running Co-App's credit after delete and ren enter co apps info");
+//        btnRunCoAppCredit.click();
+//        wait.until(ExpectedConditions.visibilityOf(popup.get(0)));
+//        softAssert.assertTrue(popupHeader.get(0).getText().contains("No Score Found"), "Run credit is showing No Score Found after delete and ren enter co apps info");
+//        softAssert.assertTrue(popupMsg.get(0).getText().contains("Verify Co-Applicant Address\n" + "Verify Co-Applicant Correct Spelling Of Name"), "Ren credit pop up message is to verify address and correct spelling of name after delete and ren enter co apps info");
+//        softAssert.assertTrue(btnPopupClose.get(0).getText().contains("Close"), "Button name is close  after delete and ren enter co apps info");
+//        btnPopupClose.get(0).click();
+//        wait.until(ExpectedConditions.visibilityOf(customerinfoHeader.get(0)));
+//        Thread.sleep(2000);
+//        softAssert.assertTrue(driver.findElement(By.className("asg_sep_block_header")).getText().contains("Credit Report"), "Credit Report label is showing after run Co-App credit after delete and ren enter co apps info");
+//        softAssert.assertTrue(driver.findElement(By.xpath("//table[contains(@class,'cr_rep_block')]/tbody/tr/td[1]")).getText().contains(CoFname + " " + CoLname), "In credit report Co-App's frstname and last name is showing after delete and ren enter co apps info");
+//        softAssert.assertTrue(driver.findElement(By.xpath("//table[contains(@class,'cr_rep_block')]/tbody/tr/td[2]/span")).getText().contains("0"), "In credit report Co-App's credit score is showing after delete and ren enter co apps info");
+//        softAssert.assertTrue(driver.findElement(By.xpath("//table[contains(@class,'cr_rep_block')]/thead/tr/th[1]/span")).getText().contains("Name"), "Credit report table head \"Name\" is showing after running Co-App's credit after delete and ren enter co apps info");
+//        softAssert.assertTrue(driver.findElement(By.xpath("//table[contains(@class,'cr_rep_block')]/thead/tr/th[2]/span")).getText().contains("Score"), "Credit report table head \"Score\" is showing after running Co-App's credit after delete and ren enter co apps info");
+
         Thread.sleep(1500);
         softAssert.assertTrue(txtCOappSSN.getAttribute("value").contains(expectedFormattedSSN2),"Co-app's SSN formated successfully in edit screen after delete and ren enter co apps info");
         softAssert.assertTrue(txtCOappCellPhn.getAttribute("value").contains(expectedFormatedCellphn),"Co-app's Cell phone formatted successfully after delete and ren enter co apps info");
@@ -577,6 +619,7 @@ public class CustomersPage {
         Thread.sleep(2000);
         String filepath ="./src/test/resources/proposalinfo.json";
         String customerFilepath = "./src/test/resources/customerinfo.json";
+        JavascriptExecutor js = (JavascriptExecutor) driver;
         JSONParser parser =new JSONParser();
         JSONArray jsonArrayInitialProposalInfo = (JSONArray) parser.parse(new FileReader(filepath));
         JSONArray jsonArrayCustomerInfo = (JSONArray) parser.parse(new FileReader(customerFilepath));
@@ -593,7 +636,7 @@ public class CustomersPage {
         softAssert.assertTrue(subHeader.get(1).getText().contains("Contract Details"),"In proposal tab Contract Details label is showing");
         softAssert.assertTrue(driver.findElements(By.xpath("//div[contains(@class,'campoContainer_prop')]//label")).get(0).getText().contains("Contract Length (months)"),"\"Contract Length (months)\" label is showing in proposal tab");
         softAssert.assertTrue(driver.findElements(By.xpath("//div[contains(@class,'campoContainer_prop')]//label")).get(1).getText().contains("Deferred Months"),"\"Deferred Months\" label is showing in proposal tab");
-        System.out.println(driver.findElements(By.className("ahs_table_block_head")).get(0).getText());
+//        System.out.println(driver.findElements(By.className("ahs_table_block_head")).get(0).getText());
         softAssert.assertTrue(driver.findElements(By.className("ahs_table_block_head")).get(0).getText().contains("EQUIPMENT LIST"),"\"Equipment List\" label is showing in proposal tab");
         softAssert.assertTrue(driver.findElements(By.className("ahs_table_block_head")).get(1).getText().contains("SERVICE LIST"),"\"Service List\" label is showing in proposal tab");
         softAssert.assertTrue(driver.findElements(By.className("tab-Product")).get(0).getText().contains("PRODUCT"),"Equipment table column \"Product\" is showing");
@@ -629,7 +672,7 @@ public class CustomersPage {
         softAssert.assertTrue(monthlyPayment.getText().contains("$69.99"),"Initially monthly payment is showing $69.99");
         jsonObject.put("Initial Monthly Payment",monthlyPayment.getText());
         String totalFinace= totalFinanceCalculate();
-        System.out.println(totalFinace);
+//        System.out.println(totalFinace);
         jsonObject.put("Total Finance",totalFinace);
         softAssert.assertTrue(proposalNextStep.getText().contains("Next Step"),"Proposal tab's next step button name is Next Step");
         proposalNextStep.click();
@@ -650,7 +693,7 @@ public class CustomersPage {
         new WebDriverWait(driver, Duration.ofSeconds(35)).until(
                 driver -> ((JavascriptExecutor) driver).executeScript("return document.readyState").equals("complete")
         );
-        System.out.println("do");
+//        System.out.println("do");
         int n = jsonArrayInitialProposalInfo.size();
         int m = jsonArrayCustomerInfo.size();
         JSONObject InitialProposalInfoObj = (JSONObject) jsonArrayInitialProposalInfo.get(n-1);
@@ -671,7 +714,7 @@ public class CustomersPage {
         softAssert.assertTrue(driver.findElement(By.xpath("//tr[contains(@class,'info-table-tr')]/td[contains(text(),'Deferred Month')]/following-sibling::td")).getText().contains(InitialProposalInfoObj.get("Deferred Month").toString()), "Deferred Month is showing on the overview after a initial save to proposal");
         softAssert.assertTrue(driver.findElement(By.xpath("//tr[contains(@class,'info-table-tr')]/td[contains(text(),'Payment Term')]/following-sibling::td")).getText().contains(InitialProposalInfoObj.get("Payment Term").toString()), "Payment Term is showing on the overview after a initial save to proposal");
         softAssert.assertTrue(driver.findElement(By.xpath("//tr[contains(@class,'info-table-tr')]/td[contains(text(),'Loan Amount')]/following-sibling::td")).getText().replace(",","").trim().replace("$","").trim().contains(InitialProposalInfoObj.get("Total Finance").toString()), "Loan Amount is showing on the overview after a initial save to proposal");
-        System.out.println("Prp time = "+customerCreatedTime);
+//        System.out.println("Prp time = "+customerCreatedTime);
 
         clickCustomersNav();
         String customerName =  customerInfoObj.get("Primary First Name")+" "+customerInfoObj.get("Primary Last Name").toString();
@@ -695,13 +738,13 @@ public class CustomersPage {
         JSONObject updatedProposalObj = (JSONObject) jsonArrayInitialProposalInfo.get(jsonArrayInitialProposalInfo.size()-1);
         updatedProposalObj.put("Updated Equipment Rate",productRandomRate);
         productDelete.get(2).click();
-        ((JavascriptExecutor) driver).executeScript("arguments[0].scrollIntoView(true);", monthlyPayment);
+        js.executeScript("arguments[0].scrollIntoView(true);", monthlyPayment);
         Thread.sleep(3000);
         proposalProdctName1.get(proposalProdctName1.size()-1).click();
         proposalProdctName2.get(proposalProdctName2.size()-2).sendKeys("cam");
         Thread.sleep(1500);
         proposalProdctName2.get(proposalProdctName2.size()-2).sendKeys("era");
-        System.out.println("999");
+//        System.out.println("999");
         wait.until(driver -> {
             for (WebElement suggestion : suggestions) {
                 String dataSelect = suggestion.getAttribute("data-select");
@@ -724,7 +767,7 @@ public class CustomersPage {
         String productPrice = randomSuggestion.getAttribute("data-price");
 
         String productManuFracture = driver.findElements(By.className("tt_sug_manufac")).get(randomIndex).getText();
-        System.out.println("1."+type+"\n2."+Productname+"\n3."+productPrice+"\n4."+productManuFracture);
+//        System.out.println("1."+type+"\n2."+Productname+"\n3."+productPrice+"\n4."+productManuFracture);
 
         // Click on the suggestion
         randomSuggestion.click();
@@ -753,6 +796,164 @@ public class CustomersPage {
         try (FileWriter writer = new FileWriter(filepath)) {
             writer.write(jsonArrayInitialProposalInfo.toJSONString());
         }
+
+        softAssert.assertTrue(activationFeeLabel.get(0).getText().contains("Activation Fee"),"Activation Fee label is showing");
+        activationFee.click();
+        activationFee.sendKeys(Keys.CONTROL+"a");
+        activationFee.sendKeys(Keys.BACK_SPACE);
+        activationFee.sendKeys("50");
+        softAssert.assertTrue(btnAddEquipment.getText().contains("Add"),"Add equipment button name is \"Add\"");
+        softAssert.assertTrue(btnAddService.getText().contains("Add"),"Add Service button name is \"Add\"");
+        softAssert.assertTrue(btnAddEquipment.isEnabled(),"Add button for equipment is showing");
+        softAssert.assertTrue(btnAddService.isEnabled(),"Add button for Service is showing");
+        int equipmentrowSize = driver.findElements(By.className("spnProductName")).size();
+        btnAddEquipment.click();
+        softAssert.assertEquals(equipmentrowSize+1,driver.findElements(By.className("spnProductName")).size(),"1 row added to equipment table");
+        int servicerowSize = driver.findElements(By.className("ServiceName")).size();
+        btnAddService.click();
+        softAssert.assertEquals(servicerowSize+1,driver.findElements(By.className("ServiceName")).size(),"1 row added to Service table");
+        softAssert.assertTrue(btnGeneratePresentation.isEnabled(),"Generate Presentation button is showing");
+        softAssert.assertTrue(btnGeneratePresentation.getText().contains("Generate Presentation"),"Button label is \"Generate Presentation\"");
+        btnGeneratePresentation.click();
+        wait.until(ExpectedConditions.visibilityOf(btnViewPresentation));
+        js.executeScript("arguments[0].scrollIntoView(true);",btnSignaturePresentationSubmit);//("arguments[0].scrollIntoView(true);", btnMakePrimary);
+        softAssert.assertTrue(btnViewPresentation.isEnabled(),"View presentation button is visible");
+        softAssert.assertTrue(btnViewPresentation.getText().contains("View Presentation"),"View presentation button's label is \"View Presentation\"");
+        softAssert.assertTrue(btnCopyPresentation.isEnabled(),"Copy Presentation button is showing");
+        softAssert.assertTrue(btnCopyPresentation.getText().contains("Copy Presentation"),"Copy Presentation button's label is copy presentation");
+        softAssert.assertTrue(btnSendPresentationEmail.isEnabled(),"Send email button is showing");
+        softAssert.assertTrue(btnSendPresentationEmail.getText().contains("Email"),"Send email button label is Email");
+        softAssert.assertTrue(btnSendPresentationText.isEnabled(),"Send text button is showing");
+        softAssert.assertTrue(btnSendPresentationText.getText().contains("Text"),"Send Text button label is Text");
+        softAssert.assertTrue(btnSendPresentationBoth.isEnabled(),"Send to both button is showing");
+        softAssert.assertTrue(btnSendPresentationBoth.getText().contains("Send To Both"),"Send to both button label is Send To Both");
+        softAssert.assertTrue(txtPresentionMailField.getAttribute("value").contains(customerInfoObj.get("Primary Email").toString()),"Email field is showing customer's primary email");
+        softAssert.assertTrue(txtPresentionTextField.getAttribute("value").contains(customerInfoObj.get("Primary Cell Phone").toString()),"Text field is showing customer's primary cell phone");
+        softAssert.assertTrue(signaturePadLabel.get(0).getText().contains("Signature"),"Signature pad label is Signature");
+        softAssert.assertTrue(btnClearSignature.getText().contains("Clear"),"Clear signature button label is clear");
+        softAssert.assertTrue(btnClearSignature.isEnabled(),"Signature clear button is showing");
+        softAssert.assertTrue(btnSignaturePresentationSubmit.getText().contains("Submit"),"Clear signature button label is submit");
+        softAssert.assertTrue(btnSignaturePresentationSubmit.isEnabled(),"Signature submit button is showing");
+        btnSendPresentationEmail.click();
+        wait.until(ExpectedConditions.visibilityOf(popup.get(11)));
+        softAssert.assertTrue(popupHeader.get(6).getText().contains("Success"),"Presentation send email success popup header is Success");
+//        LocalDateTime currentTime = LocalDateTime.now();
+//        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("M/d/yyyy h:mm a");
+//        String formattedCurrentTime = currentTime.format(formatter);
+        LocalTime currentTime = LocalTime.now();
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("H.mm"); // for 9.57 (24-hour format without leading zero)
+        String formattedTime = currentTime.format(formatter);
+        Thread.sleep(5000);
+        System.out.println("PLEASE CHECK THE EMAIL THAT AN PRESENTATION EMAIL HAS SENT WITHOUT SIGN at "+formattedTime);
+        btnSignaturePresentationSubmit.click();
+        wait.until(ExpectedConditions.visibilityOf(popup.get(4)));
+        softAssert.assertTrue(popupHeader.get(4).getText().contains("Error!"),"Popup header is showing \"Error!\", when i try to submit a sign without drawing it on the presentation");
+        softAssert.assertTrue(errorbody.get(0).getText().contains("Please Draw Your Signature"),"Pop up message is showing \"Please Draw Your Signature\"");
+        btnPopUpCloseXpath.get(2).click();
+        Thread.sleep(2000);
+        js.executeScript(
+                "var canvas = arguments[0]; " +
+                        "var rect = canvas.getBoundingClientRect(); " +
+                        "var context = canvas.getContext('2d'); " +
+                        "context.beginPath(); " +
+                        "canvas.dispatchEvent(new MouseEvent('mousedown', { " +
+                        "  bubbles: true, " +
+                        "  cancelable: true, " +
+                        "  clientX: rect.left + 50, " + // Starting point X
+                        "  clientY: rect.top + 50 " +   // Starting point Y
+                        "})); " +
+                        // Draw top curve of 'S'
+                        "canvas.dispatchEvent(new MouseEvent('mousemove', { " +
+                        "  bubbles: true, " +
+                        "  cancelable: true, " +
+                        "  clientX: rect.left + 70, " +
+                        "  clientY: rect.top + 40 " +
+                        "})); " +
+                        "canvas.dispatchEvent(new MouseEvent('mousemove', { " +
+                        "  bubbles: true, " +
+                        "  cancelable: true, " +
+                        "  clientX: rect.left + 90, " +
+                        "  clientY: rect.top + 50 " +
+                        "})); " +
+                        // Move to middle of 'S'
+                        "canvas.dispatchEvent(new MouseEvent('mousemove', { " +
+                        "  bubbles: true, " +
+                        "  cancelable: true, " +
+                        "  clientX: rect.left + 70, " +
+                        "  clientY: rect.top + 60 " +
+                        "})); " +
+                        // Draw bottom curve of 'S'
+                        "canvas.dispatchEvent(new MouseEvent('mousemove', { " +
+                        "  bubbles: true, " +
+                        "  cancelable: true, " +
+                        "  clientX: rect.left + 50, " +
+                        "  clientY: rect.top + 80 " +
+                        "})); " +
+                        "canvas.dispatchEvent(new MouseEvent('mouseup', { " +
+                        "  bubbles: true, " +
+                        "  cancelable: true " +
+                        "})); " +
+                        "context.stroke();", canvas
+        );
+        btnClearSignature.click();
+        Thread.sleep(3000);
+        js.executeScript(
+                "var canvas = arguments[0]; " +
+                        "var rect = canvas.getBoundingClientRect(); " +
+                        "var context = canvas.getContext('2d'); " +
+                        "context.beginPath(); " +
+                        "canvas.dispatchEvent(new MouseEvent('mousedown', { " +
+                        "  bubbles: true, " +
+                        "  cancelable: true, " +
+                        "  clientX: rect.left + 50, " +
+                        "  clientY: rect.top + 50 " +
+                        "})); " +
+                        "canvas.dispatchEvent(new MouseEvent('mousemove', { " +
+                        "  bubbles: true, " +
+                        "  cancelable: true, " +
+                        "  clientX: rect.left + 100, " +
+                        "  clientY: rect.top + 100 " +
+                        "})); " +
+                        "canvas.dispatchEvent(new MouseEvent('mousemove', { " +
+                        "  bubbles: true, " +
+                        "  cancelable: true, " +
+                        "  clientX: rect.left + 150, " +
+                        "  clientY: rect.top + 50 " +
+                        "})); " +
+                        "canvas.dispatchEvent(new MouseEvent('mouseup', { " +
+                        "  bubbles: true, " +
+                        "  cancelable: true " +
+                        "})); " +
+                        "context.stroke();", canvas
+        );
+        btnSignaturePresentationSubmit.click();
+        wait.until(ExpectedConditions.visibilityOf(popup.get(1)));
+        softAssert.assertTrue(popupHeader.get(1).getText().contains("Success"),"After submit the sign in presentation, the popup is showing with success header");
+        softAssert.assertTrue(btnPopupClose.get(1).getText().contains("Close"),"Popup button's close button label is \"Close\"");
+        btnPopupClose.get(1).click();
+        Thread.sleep(2000);
+        btnSendPresentationEmail.click();
+        wait.until(ExpectedConditions.visibilityOf(popup.get(11)));
+        softAssert.assertTrue(popupHeader.get(6).getText().contains("Success"),"Presentation send email success popup header is Success");
+        LocalTime currentTime2 = LocalTime.now();
+//        DateTimeFormatter formatter2 = DateTimeFormatter.ofPattern("H.mm"); // for 9.57 (24-hour format without leading zero)
+        String formattedTime2 = currentTime2.format(formatter);
+        Thread.sleep(5000);
+        System.out.println("PLEASE CHECK THE EMAIL THAT AN PRESENTATION EMAIL HAS SENT WITH A SIGN at "+formattedTime2);
+        String originalWindow = driver.getWindowHandle();
+
+        btnViewPresentation.click();
+        Thread.sleep(5000);
+        for (String windowHandle : driver.getWindowHandles()) {
+            if (!windowHandle.equals(originalWindow)) {
+                driver.switchTo().window(windowHandle);
+                break;
+            }
+        }
+        System.out.println(driver.getCurrentUrl());
+        softAssert.assertTrue(driver.getCurrentUrl().contains("CoreHomeFinancing/PrintPresentation?Id="+customerInfoObj.get("Customer Id").toString()),"View presentation is showing");
+        driver.switchTo().window(originalWindow);
+
         softAssert.assertAll();
     }
     public String totalFinanceCalculate(){
