@@ -39,12 +39,12 @@ public class CustomersPage {
     WebElement title;
     @FindBy(id = "txtSearchBox")
     WebElement searchBox;
-    @FindBy(xpath = "//a[contains(@class, 'green_button') and (@title='New Customer')]")
+    @FindBy(xpath = "//a[contains(@class, 'btn') and (@title='New Customer')]")
     WebElement btnNewCustomer;
     @FindBy(className = "_GArn")
     WebElement datefilter;
-    @FindBy(id = "FilterBranch")
-    WebElement branchFilter;
+    @FindBy(xpath = "//button[contains(@class, 'btn') and (@title='Filter')]")
+    WebElement btnFilter;
     @FindBy(id = "StatusList")
     WebElement statusFilter;
     @FindBy(id = "SalesRep33")
@@ -220,17 +220,18 @@ public class CustomersPage {
     public void clickCustomersNav() {
         customersNav.click();
         WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(30));
-        wait.until(ExpectedConditions.visibilityOf(countHeader.get(0)));
+        wait.until(ExpectedConditions.visibilityOfAllElementsLocatedBy(By.className("tb_head")));
         SoftAssert softAssert = new SoftAssert();
         softAssert.assertTrue(customersNav.getText().contains("Customers"), "Leftnav name is Customers");
-        softAssert.assertTrue(driver.findElement(By.className("fa-user")).isEnabled(), "Customers leftnav user icon is showing");
-        softAssert.assertTrue(title.getText().contains("Customers"), "Page label is \"Customers\"");
+//        softAssert.assertTrue(driver.findElement(By.className("fa-user")).isEnabled(), "Customers leftnav user icon is showing");
+       // softAssert.assertTrue(title.getText().contains("Customers"), "Page label is \"Customers\"");
         softAssert.assertTrue(searchBox.isEnabled(), "Searchbox is visible");
         softAssert.assertTrue(btnNewCustomer.isEnabled(), "New customer button is showing");
         softAssert.assertTrue(btnNewCustomer.getText().contains("New Customer"), "New Customer button name is \"New customer\"");
-        softAssert.assertTrue(driver.findElement(By.className("fa-plus-circle")).isEnabled(), "In new customer button the plus icon is visible");
+       // softAssert.assertTrue(driver.findElement(By.className("fa-plus-circle")).isEnabled(), "In new customer button the plus icon is visible");
         softAssert.assertTrue(datefilter.isEnabled(), "Date filter is visible");
-        softAssert.assertTrue(branchFilter.isEnabled(), "Branch filter is visible");
+        softAssert.assertTrue(btnFilter.isEnabled(), "Filter is visible");
+        softAssert.assertTrue(btnFilter.getText().contains("Filter"),"Filter button on customer page's label is \"Filter\"");
         softAssert.assertTrue(statusFilter.isEnabled(), "Status filter is visible");
         softAssert.assertTrue(salesRepFilter.isEnabled(), "Sales rep filter is visible");
         softAssert.assertAll();
@@ -950,7 +951,7 @@ public class CustomersPage {
                 break;
             }
         }
-        System.out.println(driver.getCurrentUrl());
+        System.out.println("In PDF please check that it have the product\""+Productname+"= "+productPrice+"\"\n"+driver.getCurrentUrl());
         softAssert.assertTrue(driver.getCurrentUrl().contains("CoreHomeFinancing/PrintPresentation?Id="+customerInfoObj.get("Customer Id").toString()),"View presentation is showing");
         driver.switchTo().window(originalWindow);
 

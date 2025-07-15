@@ -23,7 +23,8 @@ public class submitToAQUA extends Setup {
         softAssert.assertTrue(driver.findElement(By.id("BtnLogin")).getAttribute("value").contains("Log in"), "Login button name is Log in");
 
         Login login = new Login(driver);
-        login.Login("administrator", "RMRCloudTheNO1CM$");
+//        login.Login("administrator", "RMRCloudTheNO1CM$");
+        login.Login("qaadmin", "RMRCloudTheNO1CM$");
         softAssert.assertTrue(driver.getCurrentUrl().contains("asg.rmrcloud.com/dashboard"), "Dashboard URL is correct");
         softAssert.assertTrue(driver.findElement(By.className("page-header")).getText().contains("Dashboard"), "Dashboard title is showing");
         softAssert.assertAll();
