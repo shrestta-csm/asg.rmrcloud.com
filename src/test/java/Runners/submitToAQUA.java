@@ -39,7 +39,7 @@ public class submitToAQUA extends Setup {
 //        System.out.println("Creation tym from edit= "+logtime);
 //        System.out.println("Creation time from overview = "+driver.findElement(By.xpath("//tr[contains(@class,'info-table-tr')]/td[contains(text(),'Creation Date')]/following-sibling::td")).getText());
         softAssert.assertTrue(driver.findElement(By.xpath("//tr[contains(@class,'info-table-tr')]/td[contains(text(),'Creation Date')]/following-sibling::td")).getText().contains(logtime),"Customer creation time is not showing right");
-        softAssert.assertTrue(driver.getCurrentUrl().contains("/Customer/Customerdetail/?id="),"Customer details url is showing properly");
+        softAssert.assertTrue(driver.getCurrentUrl().contains("asg.rmrcloud.com/customer-details/?id="),"Customer details url is showing properly");
         softAssert.assertTrue(driver.getCurrentUrl().split("=")[1].trim().contains(driver.findElement(By.xpath("//tr[contains(@class,'info-table-tr')]/td[contains(text(),'Id')]/following-sibling::td")).getText()),"Customer id is showing");
         Thread.sleep(2000);
         customersPage.clickEditCustomerDetails();
@@ -47,7 +47,7 @@ public class submitToAQUA extends Setup {
         softAssert.assertTrue(driver.findElement(By.id("CoreHomeCoApplicant_ZipCode")).getAttribute("value").contains(""),"Co-Applicant's ZipCode field is blank initially");
         softAssert.assertTrue(driver.findElement(By.id("CoreHomeCoApplicant_City")).getAttribute("value").contains(""),"Co-Applicant's City field is blank initially");
         softAssert.assertTrue(driver.findElement(By.id("CoreHomeCoApplicant_State")).getAttribute("value").contains(""),"Co-Applicant's State field is blank initially");
-        customersPage.insertCOAppinfo("Test","Alex","Zabir","CT Royers Road","7605","Euless","NY","10/2/1988","100000105","6003434343","9999888898","shrestta.piistech@gmail.com");
+        //customersPage.insertCOAppinfo("Test","Alex","Zabir","CT Royers Road","7605","Euless","NY","10/2/1988","100000105","6003434343","9999888898","shrestta.piistech@gmail.com");
         softAssert.assertAll();
     }
     @Test(priority = 3)

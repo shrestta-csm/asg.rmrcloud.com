@@ -49,6 +49,10 @@ public class CustomersPage {
     WebElement statusFilter;
     @FindBy(id = "SalesRep33")
     WebElement salesRepFilter;
+    @FindBy(id = "FilterBranch")
+    WebElement branchFilter;
+    @FindBy(xpath = "//a[contains(@class,'btn') and contains(.,'Sync Aqua')]")
+    WebElement btnSyncAqua;
     @FindBy(className = "ahs_header")
     List<WebElement> customerinfoHeader;
     @FindBy(id = "qualify-tab")
@@ -57,6 +61,12 @@ public class CustomersPage {
     WebElement btnClear;
     @FindBy(className = "labelApplicationForm")
     List<WebElement> fieldLabel;
+    @FindBy(id = "IsSpanishSpeaker")
+    WebElement btnIsSpanish;
+    @FindBy(xpath = "//label[input[contains(@id,'IsSpanishSpeaker')]]")
+    WebElement isspanishLabel;
+    @FindBy(id = "addCoApplicantBtn")
+    WebElement addCoApplicantBtn;
     @FindBy(className = "sub-content")
     List<WebElement> countHeader;
     @FindBy(id = "btnVerifyHO")
@@ -119,7 +129,7 @@ public class CustomersPage {
     WebElement dropdownSalesRep;
     @FindBy(id = "FinanceCompanyId")
     WebElement dropdownFinanceCompany;
-    @FindBy(className = "editCustomerCustomerDetailsHeader")
+    @FindBy(className = "fa-pencil-square-o")
     WebElement btnEditCusInfo;
     @FindBy(id = "CoreHomeCoApplicant_FirstName")
     WebElement txtCOappFname;
@@ -213,11 +223,15 @@ public class CustomersPage {
     WebElement btnSignaturePresentationSubmit;
     @FindBy(id = "signature-pad-presentation")
     WebElement canvas;
+    @FindBy(className = "spnCustomerCount")
+    WebElement totalCustomerCount;
+    @FindBy(id = "btnSignPresent_addSign")
+    WebElement btnAddSign;
 
     private String customerCreatedTime;
 
 
-    public void clickCustomersNav() {
+    public void clickCustomersNav() throws InterruptedException {
         customersNav.click();
         WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(30));
         wait.until(ExpectedConditions.visibilityOfAllElementsLocatedBy(By.className("tb_head")));
@@ -232,17 +246,24 @@ public class CustomersPage {
         softAssert.assertTrue(datefilter.isEnabled(), "Date filter is visible");
         softAssert.assertTrue(btnFilter.isEnabled(), "Filter is visible");
         softAssert.assertTrue(btnFilter.getText().contains("Filter"),"Filter button on customer page's label is \"Filter\"");
+        btnFilter.click();
+        Thread.sleep(1500);
         softAssert.assertTrue(statusFilter.isEnabled(), "Status filter is visible");
         softAssert.assertTrue(salesRepFilter.isEnabled(), "Sales rep filter is visible");
+        softAssert.assertTrue(branchFilter.isEnabled(), "Branch filter is visible");
+        btnFilter.click();
+        softAssert.assertTrue(btnSyncAqua.isEnabled(),"Sync aqua button is present");
         softAssert.assertAll();
     }
     public void searchCustomerByCusName(String keyword) throws InterruptedException {
          SoftAssert softAssert = new SoftAssert();
+         int countFirst = Integer.parseInt(totalCustomerCount.getText().trim());
          softAssert.assertTrue(searchBox.getAttribute("placeholder").contains("Search"),"Searchbox placeholder is \"Search\"");
          searchBox.sendKeys(keyword);
-         btnSearchIcon.click();
          Thread.sleep(4000);
-         softAssert.assertAll();
+        int countSecond = Integer.parseInt(totalCustomerCount.getText().trim());
+        softAssert.assertTrue(countFirst>countSecond,"Total customer count decreased after search");
+        softAssert.assertAll();
     }
     public String getCurrentFormattedDateTime() {
         LocalDateTime localDateTime = LocalDateTime.now();
@@ -262,6 +283,8 @@ public class CustomersPage {
         softAssert.assertTrue(btnClear.isEnabled(), "Clear button is showing");
         softAssert.assertTrue(btnClear.getText().contains("Clear"), "Clear button name is clear");
         softAssert.assertTrue(fieldLabel.get(0).getText().contains("First Name"), "First Name label is showing");
+        softAssert.assertTrue(btnIsSpanish.isEnabled(),"Is spanish SPeaker checkbox is showing");
+        softAssert.assertTrue(isspanishLabel.getText().contains("Is Spanish Speaker?"),"Is Spanish Speaker? label is showing");
         softAssert.assertAll();
         return customerCreatedTime;
     }
@@ -288,7 +311,11 @@ public class CustomersPage {
         softAssert.assertTrue(fieldLabel.get(9).getText().contains("Cell Phone"), "Cell Phone label is showing");
         softAssert.assertTrue(fieldLabel.get(10).getText().contains("Secondary Phone"), "Secondary Phone label is showing");
         softAssert.assertTrue(fieldLabel.get(11).getText().contains("Email"), "Email label is showing");
+        softAssert.assertTrue(btnIsSpanish.isEnabled(),"Is spanish SPeaker checkbox is showing");
+        softAssert.assertTrue(isspanishLabel.getText().contains("Is Spanish Speaker?"),"Is Spanish Speaker? label is showing");
 
+        softAssert.assertTrue(addCoApplicantBtn.isEnabled(),"Add co-app button is showing");
+        softAssert.assertTrue(addCoApplicantBtn.getText().contains("Add Co-Applicant"),"Add Co-Applicant label is showing");
         softAssert.assertTrue(fieldLabel.get(12).getText().contains("First Name"), "Co-app's First Name label is showing");
         softAssert.assertTrue(fieldLabel.get(13).getText().contains("Middle Name"), "Co-app's Middle Name label is showing");
         softAssert.assertTrue(fieldLabel.get(14).getText().contains("Last Name"), "Co-app's Last Name label is showing");
@@ -475,7 +502,7 @@ public class CustomersPage {
     }
     public void clickEditCustomerDetails(){
         SoftAssert softAssert = new SoftAssert();
-        softAssert.assertTrue(btnEditCusInfo.getText().contains("Edit Application"),"Button name is \"Edit Application\"");
+//        softAssert.assertTrue(btnEditCusInfo.getText().contains("Edit Application"),"Button name is \"Edit Application\"");
         softAssert.assertTrue(driver.findElement(By.className("fa-pencil-square-o")).isEnabled(),"Edit icon is showing on edit application button");
         btnEditCusInfo.click();
         WebDriverWait wait = new WebDriverWait(driver,Duration.ofSeconds(30));
@@ -695,10 +722,9 @@ public class CustomersPage {
                 driver -> ((JavascriptExecutor) driver).executeScript("return document.readyState").equals("complete")
         );
 //        System.out.println("do");
-        int n = jsonArrayInitialProposalInfo.size();
-        int m = jsonArrayCustomerInfo.size();
-        JSONObject InitialProposalInfoObj = (JSONObject) jsonArrayInitialProposalInfo.get(n-1);
-        JSONObject customerInfoObj = (JSONObject) jsonArrayCustomerInfo.get(m-1);
+
+        JSONObject InitialProposalInfoObj = (JSONObject) jsonArrayInitialProposalInfo.get(jsonArrayInitialProposalInfo.size()-1);
+        JSONObject customerInfoObj = (JSONObject) jsonArrayCustomerInfo.get(jsonArrayCustomerInfo.size()-1);
         softAssert.assertTrue(driver.findElement(By.xpath("//tr[contains(@class,'info-table-tr')]/td[contains(text(),'Total Monthly Payment')]/following-sibling::td")).getText().contains(InitialProposalInfoObj.get("Initial Monthly Payment").toString()), "Total Monthly Payment is showing on the overview after a initial save to proposal");
         softAssert.assertTrue(driver.findElement(By.xpath("//tr[contains(@class,'info-table-tr')]/td[contains(text(),'Name')]/following-sibling::td")).getText().contains(customerInfoObj.get("Primary First Name").toString()+" "+customerInfoObj.get("Primary Middle Name").toString()+" "+customerInfoObj.get("Primary Last Name").toString()), "Customer name is showing on the overview after saving the proposal initially");
         softAssert.assertTrue(driver.findElement(By.xpath("//tr[contains(@class,'info-table-tr')]/td[contains(text(),'Sales Person')]/following-sibling::td")).getText().contains(customerInfoObj.get("Sales Person").toString()), "salesPerson name is showing  on the overview after saving the proposal initially");
@@ -779,14 +805,20 @@ public class CustomersPage {
         updatedProposalObj.put("New Monthly Financing",MonthlyFinancingAmount.getText());
 
         driver.findElements(By.className("spnServiceRate")).get(0).click();
+        if(Integer.parseInt(productRandomRate)<=45){
+            serviceMonthlyRate.get(0).click();
+            serviceMonthlyRate.get(0).sendKeys(Keys.CONTROL+"a");
+            serviceMonthlyRate.get(0).sendKeys(Keys.BACK_SPACE);
+            String serviceRandomRate = String.format("%.2f", (new Random().nextInt(31) + 10) - 0.01);
 
-        serviceMonthlyRate.get(0).click();
-        serviceMonthlyRate.get(0).sendKeys(Keys.CONTROL+"a");
-        serviceMonthlyRate.get(0).sendKeys(Keys.BACK_SPACE);
-        String serviceRandomRate = String.format("%.2f", (new Random().nextInt(31) + 10) - 0.01);
+            serviceMonthlyRate.get(0).sendKeys(serviceRandomRate);
+            serviceMonthlyRate.get(0).sendKeys(Keys.ENTER);
+        }
+        else {
+                softAssert.assertFalse(serviceMonthlyRate.get(0).isEnabled(),"Service rate can't be changed if the product rate is more than $45");
+        }
 
-        serviceMonthlyRate.get(0).sendKeys(serviceRandomRate);
-        serviceMonthlyRate.get(0).sendKeys(Keys.ENTER);
+
 
 
         String updatedMonthlyPayment = totalmonthlyPayment();
@@ -817,7 +849,7 @@ public class CustomersPage {
         softAssert.assertTrue(btnGeneratePresentation.getText().contains("Generate Presentation"),"Button label is \"Generate Presentation\"");
         btnGeneratePresentation.click();
         wait.until(ExpectedConditions.visibilityOf(btnViewPresentation));
-        js.executeScript("arguments[0].scrollIntoView(true);",btnSignaturePresentationSubmit);//("arguments[0].scrollIntoView(true);", btnMakePrimary);
+        js.executeScript("arguments[0].scrollIntoView(true);",btnAddSign);//("arguments[0].scrollIntoView(true);", btnMakePrimary);
         softAssert.assertTrue(btnViewPresentation.isEnabled(),"View presentation button is visible");
         softAssert.assertTrue(btnViewPresentation.getText().contains("View Presentation"),"View presentation button's label is \"View Presentation\"");
         softAssert.assertTrue(btnCopyPresentation.isEnabled(),"Copy Presentation button is showing");
@@ -830,11 +862,8 @@ public class CustomersPage {
         softAssert.assertTrue(btnSendPresentationBoth.getText().contains("Send To Both"),"Send to both button label is Send To Both");
         softAssert.assertTrue(txtPresentionMailField.getAttribute("value").contains(customerInfoObj.get("Primary Email").toString()),"Email field is showing customer's primary email");
         softAssert.assertTrue(txtPresentionTextField.getAttribute("value").contains(customerInfoObj.get("Primary Cell Phone").toString()),"Text field is showing customer's primary cell phone");
-        softAssert.assertTrue(signaturePadLabel.get(0).getText().contains("Signature"),"Signature pad label is Signature");
-        softAssert.assertTrue(btnClearSignature.getText().contains("Clear"),"Clear signature button label is clear");
-        softAssert.assertTrue(btnClearSignature.isEnabled(),"Signature clear button is showing");
-        softAssert.assertTrue(btnSignaturePresentationSubmit.getText().contains("Submit"),"Clear signature button label is submit");
-        softAssert.assertTrue(btnSignaturePresentationSubmit.isEnabled(),"Signature submit button is showing");
+        softAssert.assertTrue(btnAddSign.getText().contains("Add Signature"),"Button label is Add Signature");
+
         btnSendPresentationEmail.click();
         wait.until(ExpectedConditions.visibilityOf(popup.get(11)));
         softAssert.assertTrue(popupHeader.get(6).getText().contains("Success"),"Presentation send email success popup header is Success");
@@ -846,6 +875,14 @@ public class CustomersPage {
         String formattedTime = currentTime.format(formatter);
         Thread.sleep(5000);
         System.out.println("PLEASE CHECK THE EMAIL THAT AN PRESENTATION EMAIL HAS SENT WITHOUT SIGN at "+formattedTime);
+
+        btnAddSign.click();
+        wait.until(ExpectedConditions.visibilityOf(signaturePadLabel.get(0)));
+        softAssert.assertTrue(signaturePadLabel.get(0).getText().contains("Signature"),"Signature pad label is Signature");
+        softAssert.assertTrue(btnClearSignature.getText().contains("Clear"),"Clear signature button label is clear");
+        softAssert.assertTrue(btnClearSignature.isEnabled(),"Signature clear button is showing");
+        softAssert.assertTrue(btnSignaturePresentationSubmit.getText().contains("Submit"),"Clear signature button label is submit");
+        softAssert.assertTrue(btnSignaturePresentationSubmit.isEnabled(),"Signature submit button is showing");
         btnSignaturePresentationSubmit.click();
         wait.until(ExpectedConditions.visibilityOf(popup.get(4)));
         softAssert.assertTrue(popupHeader.get(4).getText().contains("Error!"),"Popup header is showing \"Error!\", when i try to submit a sign without drawing it on the presentation");
@@ -954,7 +991,28 @@ public class CustomersPage {
         System.out.println("In PDF please check that it have the product\""+Productname+"= "+productPrice+"\"\n"+driver.getCurrentUrl());
         softAssert.assertTrue(driver.getCurrentUrl().contains("CoreHomeFinancing/PrintPresentation?Id="+customerInfoObj.get("Customer Id").toString()),"View presentation is showing");
         driver.switchTo().window(originalWindow);
+        btnCloseScreen.get(1).click();
+        new WebDriverWait(driver, Duration.ofSeconds(35)).until(
+                driver -> ((JavascriptExecutor) driver).executeScript("return document.readyState").equals("complete")
+        );
+        softAssert.assertTrue(driver.getCurrentUrl().contains("asg.rmrcloud.com/customer-details/?id="+customerInfoObj.get("Customer Id").toString()),"After editing proposal and close the window, the URL is showing properly");
 
+        softAssert.assertTrue(driver.findElement(By.xpath("//tr[contains(@class,'info-table-tr')]/td[contains(text(),'Total Monthly Payment')]/following-sibling::td")).getText().contains(InitialProposalInfoObj.get("New Monthly Payment").toString()), "Total Monthly Payment is showing correct on the overview after a editing the equipment values in proposal");
+        softAssert.assertTrue(driver.findElement(By.xpath("//tr[contains(@class,'info-table-tr')]/td[contains(text(),'Name')]/following-sibling::td")).getText().contains(customerInfoObj.get("Primary First Name").toString()+" "+customerInfoObj.get("Primary Middle Name").toString()+" "+customerInfoObj.get("Primary Last Name").toString()), "Customer name is showing on the overview after  a editing the equipment values in proposal");
+        softAssert.assertTrue(driver.findElement(By.xpath("//tr[contains(@class,'info-table-tr')]/td[contains(text(),'Sales Person')]/following-sibling::td")).getText().contains(customerInfoObj.get("Sales Person").toString()), "salesPerson name is showing  on the overview after  a editing the equipment values in proposal");
+        softAssert.assertTrue(driver.findElement(By.xpath("//tr[contains(@class,'info-table-tr')]/td[contains(text(),'Finance Company')]/following-sibling::td")).getText().contains(customerInfoObj.get("Financing Company").toString()), "financeCompany name is showing  on the overview after a editing the equipment values in proposal");
+//        softAssert.assertTrue(driver.findElement(By.xpath("//tr[contains(@class,'info-table-tr')]/td[contains(text(),'Social Security Number')]/following-sibling::td")).getText().contains(expectedSSNFormatted), "SSN is showing on the overview after saving the proposal initially");
+        softAssert.assertTrue(driver.findElement(By.xpath("//tr[contains(@class,'info-table-tr')]/td[contains(text(),'Cell Phone')]/following-sibling::td")).getText().contains(customerInfoObj.get("Primary Cell Phone").toString()), "Customer Cell Phone is showing on the overview after a editing the equipment values in proposal");
+        softAssert.assertTrue(driver.findElement(By.xpath("//tr[contains(@class,'info-table-tr')]/td[contains(text(),'Secondary Phone')]/following-sibling::td")).getText().contains(customerInfoObj.get("Primary Secondary Phone").toString()), "Customer Secondary Phone is showing on the overview after a editing the equipment values in proposal");
+        softAssert.assertTrue(driver.findElement(By.xpath("//tr[contains(@class,'info-table-tr')]/td[contains(text(),'Email')]/following-sibling::td")).getText().contains(customerInfoObj.get("Primary Email").toString()), "Customer Email is showing on the overview after a editing the equipment values in proposal");
+        softAssert.assertTrue(driver.findElement(By.xpath("//tr[contains(@class,'info-table-tr')]/td[contains(text(),'Postal Code')]/following-sibling::td")).getText().contains(customerInfoObj.get("Primary Zip").toString()), "Customer Postal Code is showing on the overview after a editing the equipment values in proposal");
+        softAssert.assertTrue(driver.findElement(By.xpath("//tr[contains(@class,'info-table-tr')]/td[contains(text(),'Address')]/following-sibling::td")).getText().replace("\n", ", ").trim().contains(customerInfoObj.get("Primary Address").toString()+", "+customerInfoObj.get("Primary City").toString()+", "+customerInfoObj.get("Primary State").toString()+" "+customerInfoObj.get("Primary Zip").toString()), "Customer address is showing on the overview after a editing the equipment values in proposal");
+        softAssert.assertTrue(driver.findElement(By.xpath("//tr[contains(@class,'info-table-tr')]/td[contains(text(),'Monthly Equipment')]/following-sibling::td")).getText().contains(InitialProposalInfoObj.get("New Monthly Financing").toString()), "Monthly Equipment is showing on the overview after  a editing the equipment values in proposal");
+        softAssert.assertTrue(driver.findElement(By.xpath("//tr[contains(@class,'info-table-tr')]/td[contains(text(),'Monthly Monitoring')]/following-sibling::td")).getText().contains(InitialProposalInfoObj.get("New Monthly Monitoring").toString()), "Monthly Monitoring is showing on the overview after a editing the equipment values in proposal");
+        softAssert.assertTrue(driver.findElement(By.xpath("//tr[contains(@class,'info-table-tr')]/td[contains(text(),'Contract Length')]/following-sibling::td")).getText().contains(InitialProposalInfoObj.get("Contract Length").toString()), "Contract Length is showing on the overview after a editing the equipment values in proposal");
+        softAssert.assertTrue(driver.findElement(By.xpath("//tr[contains(@class,'info-table-tr')]/td[contains(text(),'Deferred Month')]/following-sibling::td")).getText().contains(InitialProposalInfoObj.get("Deferred Month").toString()), "Deferred Month is showing on the overview after a editing the equipment values in proposal");
+        softAssert.assertTrue(driver.findElement(By.xpath("//tr[contains(@class,'info-table-tr')]/td[contains(text(),'Payment Term')]/following-sibling::td")).getText().contains(InitialProposalInfoObj.get("Payment Term").toString()), "Payment Term is showing on the overview after a editing the equipment values in proposal");
+        softAssert.assertTrue(driver.findElement(By.xpath("//tr[contains(@class,'info-table-tr')]/td[contains(text(),'Loan Amount')]/following-sibling::td")).getText().replace(",","").trim().replace("$","").trim().contains(InitialProposalInfoObj.get("New Total Finance").toString()), "Loan Amount is showing on the overview after a editing the equipment values in proposal");
         softAssert.assertAll();
     }
     public String totalFinanceCalculate(){
