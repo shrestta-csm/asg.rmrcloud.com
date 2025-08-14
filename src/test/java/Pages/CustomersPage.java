@@ -227,6 +227,57 @@ public class CustomersPage {
     WebElement totalCustomerCount;
     @FindBy(id = "btnSignPresent_addSign")
     WebElement btnAddSign;
+    @FindBy(id = "pills-contact-tab")
+    WebElement tabContact;
+    @FindBy(xpath = "//table[contains(@class,'table_style_fin')]//th")
+    List<WebElement> emergencyContactTableHeader;
+    @FindBy(id = "btnFinanceAddNewEmgContact")
+    WebElement btnAddNewEmgContact;
+    @FindBy(id = "VerbalPassword")
+    WebElement txtAbortCode;
+    @FindBy(id = "Name")
+    WebElement txtContactName;
+    @FindBy(id = "Phone")
+    WebElement txtContactPhone;
+    @FindBy(id = "PhoneType")
+    WebElement contactPhoneType;
+    @FindBy(className = "span-style")
+    List<WebElement> fieldLabel2;
+    @FindBy(id = "btnSaveEmgContact")
+    WebElement btnSaveEmgContact;
+    @FindBy(xpath = "//tbody[@id='f_e_count']//*[name()='svg' and contains(@onclick,'DeleteEmCon')]")
+    WebElement btnDeleteEmgContc;
+    @FindBy(id = "payment-tab-li")
+    WebElement tabPayment;
+    @FindBy(xpath = "//input[@name='choice']/parent::label")
+    List<WebElement> paymentoptions;
+    @FindBy(id = "btnProjectUploadVoid")
+    WebElement btnProjectUploadVoid;
+    @FindBy(id = "BillingDay")
+    WebElement BillingDay;
+    @FindBy(className = "text-custom")
+    List<WebElement> textcustom;
+    @FindBy(id = "CardNumber")
+    WebElement ccNumber;
+    @FindBy(id = "CardExpireDate")
+    WebElement creditCardExpireDate;
+    @FindBy(id = "unselectPM")
+    WebElement unselectPaymentMethod;
+    @FindBy(id = "RoutingNo")
+    WebElement ACHRoutingNo;
+    @FindBy(id = "AcountNo")
+    WebElement ACHAcountNo;
+    @FindBy(id = "AccountName")
+    WebElement ACHAccountName;
+    @FindBy(id = "BankName")
+    WebElement ACHBankName;
+    @FindBy(css = "input[type=file]") //// Send keys directly to the hidden file input field
+    WebElement uploadVoidDocument;
+    @FindBy(id = "SavePaymentDetailBtn")
+    WebElement btnSavePaymentDetail;
+
+
+
 
     private String customerCreatedTime;
 
@@ -264,6 +315,11 @@ public class CustomersPage {
         int countSecond = Integer.parseInt(totalCustomerCount.getText().trim());
         softAssert.assertTrue(countFirst>countSecond,"Total customer count decreased after search");
         softAssert.assertAll();
+    }
+    public void seeSearchedCustomer(){
+        driver.findElements(By.xpath("//a[(@title='Customer name')]/div/span")).get(0).click();
+        WebDriverWait wait = new WebDriverWait(driver,Duration.ofSeconds(30));
+        wait.until(ExpectedConditions.visibilityOfAllElementsLocatedBy(By.className("ci_header")));
     }
     public String getCurrentFormattedDateTime() {
         LocalDateTime localDateTime = LocalDateTime.now();
@@ -467,8 +523,7 @@ public class CustomersPage {
 //        System.out.println(timestamp);
         softAssert.assertTrue(driver.findElement(By.xpath("//table[contains(@class,'table_style_fin')]//div[contains(text(),'Date') and (@class='resp_head')]/following-sibling::div/span[@title='Sold Date']")).getText().contains("Sold: "+timestamp));
         softAssert.assertTrue(driver.findElements(By.xpath("//a[(@title='Customer name')]/div/span")).get(0).getText().contains(cusnameObj.get("Primary First Name")+" "+cusnameObj.get("Primary Middle Name")+" "+cusnameObj.get("Primary Last Name").toString()));
-        driver.findElements(By.xpath("//a[(@title='Customer name')]/div/span")).get(0).click();
-        wait.until(ExpectedConditions.visibilityOfAllElementsLocatedBy(By.className("ci_header")));
+        seeSearchedCustomer();
         JSONObject updatedcusObj = (JSONObject) jsonArray.get(jsonArray.size()-1);
         System.out.println(driver.getCurrentUrl());
         System.out.println("id="+driver.getCurrentUrl().split("id")[1].replace("=","").trim());
@@ -748,8 +803,7 @@ public class CustomersPage {
         searchCustomerByCusName(customerName);
         softAssert.assertTrue(driver.findElement(By.xpath("//table[contains(@class,'table_style_fin')]//div[contains(text(),'Payment') and (@class='resp_head')]/following-sibling::div/span[@title='Total Payment']")).getText().contains(InitialProposalInfoObj.get("Initial Monthly Payment").toString()),"In customer list, payment is shhowing after initial save");
         softAssert.assertTrue(driver.findElements(By.xpath("//a[(@title='Customer name')]/div/span")).get(0).getText().contains(customerInfoObj.get("Primary First Name")+" "+customerInfoObj.get("Primary Middle Name")+" "+customerInfoObj.get("Primary Last Name").toString()));
-        driver.findElements(By.xpath("//a[(@title='Customer name')]/div/span")).get(0).click();
-        wait.until(ExpectedConditions.visibilityOfAllElementsLocatedBy(By.className("ci_header")));
+        seeSearchedCustomer();
         clickEditCustomerDetails();
         tabProposal.click();
         Thread.sleep(3000);
@@ -817,19 +871,12 @@ public class CustomersPage {
         else {
                 softAssert.assertFalse(serviceMonthlyRate.get(0).isEnabled(),"Service rate can't be changed if the product rate is more than $45");
         }
-
-
-
-
         String updatedMonthlyPayment = totalmonthlyPayment();
         updatedProposalObj.put("New Monthly Payment",updatedMonthlyPayment);
         updatedProposalObj.put("New Monthly Monitoring",MonthlyMonitoringAmount.getText());
-
-        // Write the whole array back to file
         try (FileWriter writer = new FileWriter(filepath)) {
             writer.write(jsonArrayInitialProposalInfo.toJSONString());
         }
-
         softAssert.assertTrue(activationFeeLabel.get(0).getText().contains("Activation Fee"),"Activation Fee label is showing");
         activationFee.click();
         activationFee.sendKeys(Keys.CONTROL+"a");
@@ -867,9 +914,6 @@ public class CustomersPage {
         btnSendPresentationEmail.click();
         wait.until(ExpectedConditions.visibilityOf(popup.get(11)));
         softAssert.assertTrue(popupHeader.get(6).getText().contains("Success"),"Presentation send email success popup header is Success");
-//        LocalDateTime currentTime = LocalDateTime.now();
-//        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("M/d/yyyy h:mm a");
-//        String formattedCurrentTime = currentTime.format(formatter);
         LocalTime currentTime = LocalTime.now();
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("H.mm"); // for 9.57 (24-hour format without leading zero)
         String formattedTime = currentTime.format(formatter);
@@ -1031,5 +1075,179 @@ public class CustomersPage {
 //        Float result = totalMonthly/value2;
 //        String totalFinance = Float.toString(result);
         return String.format("%.2f", totalMonthly+totalMonthlyMonitoring);
+    }
+    public void addContacts(String abortCode) throws InterruptedException, IOException, ParseException {
+        clickCustomersNav();
+        String customerFilepath = "./src/test/resources/customerinfo.json";
+        JSONParser parser =new JSONParser();
+        JSONArray jsonArrayCustomerInfo = (JSONArray) parser.parse(new FileReader(customerFilepath));
+        JSONObject customerInfoObj = (JSONObject) jsonArrayCustomerInfo.get(jsonArrayCustomerInfo.size()-1);
+        String customerName =  customerInfoObj.get("Primary First Name")+" "+customerInfoObj.get("Primary Last Name").toString();
+        searchCustomerByCusName(customerName);
+        seeSearchedCustomer();
+        clickEditCustomerDetails();
+        tabContact.click();
+        WebDriverWait wait = new WebDriverWait(driver,Duration.ofSeconds(30));
+        wait.until(ExpectedConditions.visibilityOf(customerinfoHeader.get(2)));
+        SoftAssert softAssert = new SoftAssert();
+        softAssert.assertTrue(customerinfoHeader.get(2).getText().contains("Emergency Contacts"),"In contact tab, the label is Emergency Contacts");
+        softAssert.assertTrue(emergencyContactTableHeader.get(0).getText().contains("Name"),"In contact tab, the emergency contact table header is Name");
+        softAssert.assertTrue(emergencyContactTableHeader.get(1).getText().contains("Phone"),"In contact tab, the emergency contact table header is Phone");
+        softAssert.assertTrue(emergencyContactTableHeader.get(2).getText().contains("Action"),"In contact tab, the emergency contact table header is Action");
+        softAssert.assertTrue(btnAddNewEmgContact.isEnabled(),"Add new contact button is showing");
+        softAssert.assertTrue(btnAddNewEmgContact.getText().contains("Add New Contact"),"Add new emergency contact label is \"Add New Contact\"");
+        softAssert.assertTrue(pageHeader.get(1).getText().contains("Abort Code"),"Abort Code header is showing");
+        softAssert.assertTrue(txtAbortCode.getAttribute("placeholder").contains("Abort Code"),"Abort code text box placeholder is showing \"Abort Code\"");
+        softAssert.assertFalse(tabContact.getAttribute("class").contains("pre_active"), "Contact tab is not active before inserting information");
+        btnAddNewEmgContact.click();
+        wait.until(ExpectedConditions.visibilityOfAllElementsLocatedBy(By.className("rtlm_header")));
+        softAssert.assertTrue(driver.findElement(By.className("rtlm_header")).getText().contains("Add Emergency Conatct"),"Add Emergency Conatct label is showing on the new contact adding pop up");
+        softAssert.assertTrue(fieldLabel2.get(2).getText().contains("Name"),"Name field label is showing in adding contact form");
+        softAssert.assertTrue(fieldLabel2.get(3).getText().contains("Phone"),"Phone field label is showing in adding contact form");
+        softAssert.assertTrue(fieldLabel2.get(4).getText().contains("Phone Type"),"Phone Type field label is showing in adding contact form");
+        Faker faker = new Faker();
+
+        String contactname = faker.name().firstName();
+        String phonenumber = "8"+faker.number().digits(9);
+        txtContactName.sendKeys(contactname);
+        customerInfoObj.put("Emergency Contact Name",contactname);
+        txtContactPhone.sendKeys(phonenumber);
+        customerInfoObj.put("Emergency Contact Phone",phonenumber);
+        contactPhoneType.click();
+        Select select =  new Select(contactPhoneType);
+        List<WebElement> options = select.getOptions();
+        Random random = new Random();
+        int rand = random.nextInt(options.size());
+        customerInfoObj.put("Emergency Contact Phone Type",options.get(rand).getText());
+        select.selectByVisibleText(options.get(rand).getText());
+        btnSaveEmgContact.click();
+        wait.until(ExpectedConditions.visibilityOf(popup.get(1)));
+        softAssert.assertTrue(popupHeader.get(1).getText().contains("Success!"),"After saving emergency contact it shows a popup with Success header");
+        softAssert.assertTrue(btnPopupClose.get(1).getText().contains("Close"),"Button name is Close after saving an emergency contact");
+        btnPopupClose.get(1).click();
+        Thread.sleep(2000);
+        btnNextStep.get(1).click();
+        wait.until(ExpectedConditions.visibilityOf(popup.get(4)));
+        softAssert.assertTrue(popupHeader.get(4).getText().contains("Error!"),"Popup header is showing Error! after I try to save contact without abortcode");
+        softAssert.assertTrue(errorbody.get(0).getText().contains("Abort Code required"),"When I try to save contact without abortcode, the popup text is showing Abort Code required");
+        btnPopUpCloseXpath.get(2).click();
+        Thread.sleep(3000);
+        btnDeleteEmgContc.click();
+        wait.until(ExpectedConditions.visibilityOf(popup.get(3)));
+        softAssert.assertTrue(popupHeader.get(3).getText().contains("Confirm?"),"Delete emergency contact pop up header is \"Confirm?\"");
+        softAssert.assertTrue(popupMsg.get(4).getText().contains("Do you want to delete this from the list?"),"emergency contact delete pop up is asking \"Do you want to delete this from the list?\"");
+        softAssert.assertTrue(btnNoPopUp.get(0).getText().contains("No"),"Emg contact delete popup's one button label is No");
+        softAssert.assertTrue(btnYesPopUp.get(0).getText().contains("Yes"),"Emg contact delete popup's another button label is Yes");
+        btnYesPopUp.get(0).click();
+        wait.until(ExpectedConditions.visibilityOf(popup.get(1)));
+        softAssert.assertTrue(popupHeader.get(1).getText().contains("Success!"),"After deleting emg contact the popup is showing with \"Success!\" header");
+        btnPopupClose.get(1).click();
+        wait.until(ExpectedConditions.invisibilityOfElementLocated(By.xpath("//tbody[@id='f_e_count']/tr")));
+        softAssert.assertTrue(driver.findElements(By.xpath("//tbody[(@id='f_e_count')]/tr/td")).isEmpty(),"After deleting there is no data");
+        txtAbortCode.click();
+        txtAbortCode.sendKeys(abortCode);
+        customerInfoObj.put("Abort code",abortCode);
+        softAssert.assertFalse(tabContact.getAttribute("class").contains("pre_active"), "Contact tab is not activate yet");
+        btnNextStep.get(1).click();
+        wait.until(ExpectedConditions.visibilityOf(popup.get(4)));
+        softAssert.assertTrue(popupHeader.get(4).getText().contains("Error!"),"Popup header is showing Error! after I try to save contact without emergency contact");
+        softAssert.assertTrue(errorbody.get(0).getText().contains("Contact required"),"When I try to save contact without emergency contact, the popup text is showing Contact required");
+        btnPopUpCloseXpath.get(2).click();
+        Thread.sleep(3000);
+
+        btnAddNewEmgContact.click();
+        wait.until(ExpectedConditions.visibilityOfAllElementsLocatedBy(By.className("rtlm_header")));
+        softAssert.assertTrue(driver.findElement(By.className("rtlm_header")).getText().contains("Add Emergency Conatct"),"Add Emergency Conatct label is showing on the new contact adding pop up");
+        softAssert.assertTrue(fieldLabel2.get(2).getText().contains("Name"),"Name field label is showing in adding contact form");
+        softAssert.assertTrue(fieldLabel2.get(3).getText().contains("Phone"),"Phone field label is showing in adding contact form");
+        softAssert.assertTrue(fieldLabel2.get(4).getText().contains("Phone Type"),"Phone Type field label is showing in adding contact form");
+        txtContactName.sendKeys(contactname);
+        txtContactPhone.sendKeys(phonenumber);
+        contactPhoneType.click();
+        List<WebElement> options2 = select.getOptions();
+        select.selectByVisibleText(options2.get(rand).getText());
+        btnSaveEmgContact.click();
+        wait.until(ExpectedConditions.visibilityOf(popup.get(1)));
+        softAssert.assertTrue(popupHeader.get(1).getText().contains("Success!"),"After saving emergency contact for the 2nd time it shows a popup with Success header");
+        softAssert.assertTrue(btnPopupClose.get(1).getText().contains("Close"),"Button name is Close after saving an emergency contact for the 2nd time ");
+        btnPopupClose.get(1).click();
+        Thread.sleep(2000);
+        btnNextStep.get(1).click();
+        wait.until(ExpectedConditions.visibilityOf(pageHeader.get(2)));
+        softAssert.assertTrue(tabContact.getAttribute("class").contains("pre_active"), "Contact tab is activated");
+        try(FileWriter fileWriter = new FileWriter(customerFilepath)){
+            fileWriter.write(jsonArrayCustomerInfo.toJSONString());
+        }
+        softAssert.assertAll();
+    }
+    public void addPaymentACH(String rountingNo, String accountNo,String achAccountName) throws InterruptedException, IOException, ParseException {
+        tabPayment.click();
+        Thread.sleep(2000);
+        SoftAssert softAssert = new SoftAssert();
+        String filepath = "./src/test/resources/customerinfo.json";
+        JSONParser parser= new JSONParser();
+        JSONArray jsonArray = (JSONArray) parser.parse(new FileReader(filepath));
+        JSONObject jsonObject = (JSONObject) jsonArray.get(jsonArray.size()-1);
+        softAssert.assertTrue(pageHeader.get(2).getText().contains("Payment Details"),"Payment tab's page header is Payment Details");
+        softAssert.assertTrue(fieldLabel.get(24).getText().contains("Billing Date"),"Billing Date label on payment tab is showing");
+        softAssert.assertTrue(fieldLabel.get(26).getText().contains("Upload Voided Check"),"Upload Voided Check label is showing on payment tab");
+        softAssert.assertTrue(driver.findElement(By.className("header_style_flex")).getText().contains("FINANCE COMPANY AND AMA PAYMENT"),"Finance Company and AMA Payment label is showing on Payment tab");
+        softAssert.assertTrue(paymentoptions.get(0).getText().contains("ACH"),"Payment option ACH is showing");
+        softAssert.assertTrue(paymentoptions.get(1).getText().contains("Manual Billing"),"Payment option Manual Billing is showing in the payment tab");
+        softAssert.assertTrue(btnProjectUploadVoid.getText().contains("Choose File"),"upload void check button label is Choose File");
+        softAssert.assertTrue(driver.findElement(By.xpath("//button[@id='btnProjectUploadVoid']/i[contains(@class,'fa-upload')]")).isEnabled(),"Upload void check button is showing a upload sign");
+        BillingDay.click();
+        Select selectBillingDay = new Select(BillingDay);
+        softAssert.assertTrue(selectBillingDay.getFirstSelectedOption().getText().contains("Billing Day"),"In billing day option, first selected is Billing Day");
+        List<WebElement> billingOptions = selectBillingDay.getOptions();
+        billingOptions.removeIf(option -> option.getText().equals("Billing Day"));
+        Random random = new Random();
+        int rand = random.nextInt(billingOptions.size());
+        jsonObject.put("Billing Day",billingOptions.get(rand).getText());
+        selectBillingDay.selectByVisibleText(billingOptions.get(rand).getText());
+        paymentoptions.get(1).click();
+        Thread.sleep(3000);
+        softAssert.assertTrue(fieldLabel.get(25).getText().contains("WARNING: 4% Deduction"),"WARNING: 4% Deduction label is showing after selecting Manual Billing");
+        softAssert.assertTrue(driver.findElements(By.className("ra_head")).get(1).getText().contains("AMA PAYMENT"),"AMA Payment label is showing after selecting manual billing option");
+        softAssert.assertTrue(driver.findElement(By.xpath("//input[@name='CC_choice']/parent::label")).getText().contains("Credit Card"),"Credit card option is showing after selecting manual billing");
+        driver.findElement(By.xpath("//input[@name='CC_choice']/parent::label")).click();
+        softAssert.assertTrue(textcustom.get(1).getText().contains("Card Number"),"Card Number label is showing after selecting credit card option");
+        softAssert.assertTrue(textcustom.get(2).getText().contains("Expiration Date")," label is showing after selecting credit card option");
+        softAssert.assertTrue(textcustom.get(3).getText().contains("Secuity Code")," label is showing after selecting credit card option");
+        softAssert.assertTrue(textcustom.get(4).getText().contains("Name on Card")," label is showing after selecting credit card option");
+        softAssert.assertTrue(ccNumber.getAttribute("placeholder").contains("xxxx-xxxx-xxxx-xxxx"),"Credit card placeholder is xxxx-xxxx-xxxx-xxxx");
+        softAssert.assertTrue(creditCardExpireDate.getAttribute("placeholder").contains("MM/YY"),"Credit card expiration date field's placeholder is MM/YY");
+        softAssert.assertTrue(driver.findElement(By.xpath("//div[@class='row']/div/span")).getText().contains("WARNING: Can not be used for Finance Company"),"WARNING: Can not be used for Finance Company label is showing after selecting credit card");
+        softAssert.assertTrue(unselectPaymentMethod.getText().contains("Unselect"),"Unselect payment method button's label is unselect");
+        unselectPaymentMethod.click();
+        Thread.sleep(2000);
+        softAssert.assertFalse(paymentoptions.get(0).isSelected(),"ACH is not selected");
+        softAssert.assertFalse(paymentoptions.get(1).isSelected(),"Manual billing is not selected");
+        paymentoptions.get(0).click();
+        Thread.sleep(3500);
+        WebDriverWait wait = new WebDriverWait(driver,Duration.ofSeconds(30));
+        System.out.println(subHeader.get(2).getText());
+       // wait.until(ExpectedConditions.visibilityOf(subHeader.get(2)));
+        softAssert.assertTrue(subHeader.get(2).getText().contains("ACH Details"),"After selecting ACH the ACH Details label is showing");
+        softAssert.assertTrue(textcustom.get(0).getText().contains("Routing No"),"Routing No label is showing after selecting ACH payment option");
+        softAssert.assertTrue(textcustom.get(1).getText().contains("Account No"),"Account No label is showing after selecting ACH payment option");
+        softAssert.assertTrue(textcustom.get(2).getText().contains("Account Holder's Name"),"Account Holder's Name label is showing after selecting ACH payment option");
+        softAssert.assertTrue(textcustom.get(3).getText().contains("Bank Name"),"Bank Name label is showing after selecting ACH payment option");
+        ACHRoutingNo.sendKeys(rountingNo);
+        jsonObject.put("ACH Routing No",rountingNo);
+        ACHAcountNo.sendKeys(accountNo);
+        jsonObject.put("ACH Account No",accountNo);
+        ACHAccountName.sendKeys(achAccountName);
+        jsonObject.put("ACH Account Name",achAccountName);
+        uploadVoidDocument.sendKeys(System.getProperty("user.dir")+"./src/test/resources/download.jpg");
+        softAssert.assertTrue(btnSavePaymentDetail.getText().contains("Save Payment Details"),"Payment save button label is Save Payment Details");
+        try (FileWriter fileWriter = new FileWriter(filepath)){
+            fileWriter.write(jsonArray.toJSONString());
+        }
+        btnSavePaymentDetail.click();
+        wait.until(ExpectedConditions.visibilityOf(pageHeader.get(3)));
+        softAssert.assertTrue(tabPayment.getAttribute("class").contains("pre_active"), "Payment tab is activated");
+        driver.navigate().refresh();
+        softAssert.assertAll();
     }
 }

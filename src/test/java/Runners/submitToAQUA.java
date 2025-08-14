@@ -35,7 +35,7 @@ public class submitToAQUA extends Setup {
         CustomersPage customersPage = new CustomersPage(driver);
         customersPage.clickCustomersNav();
         String logtime = customersPage.clickNewCusButton();
-        customersPage.insertQualifyInfos("7604","0","Euless","TX","4/1/56","100000102","8004444444","shrestta.qa@gmail.com");
+;        customersPage.insertQualifyInfos("7604","0","Euless","TX","4/1/56","100000102","8004444444","shrestta.qa@gmail.com");
 //        System.out.println("Creation tym from edit= "+logtime);
 //        System.out.println("Creation time from overview = "+driver.findElement(By.xpath("//tr[contains(@class,'info-table-tr')]/td[contains(text(),'Creation Date')]/following-sibling::td")).getText());
         softAssert.assertTrue(driver.findElement(By.xpath("//tr[contains(@class,'info-table-tr')]/td[contains(text(),'Creation Date')]/following-sibling::td")).getText().contains(logtime),"Customer creation time is not showing right");
@@ -56,5 +56,16 @@ public class submitToAQUA extends Setup {
         CustomersPage customersPage =new CustomersPage(driver);
         customersPage.createProposal("14","4");
     }
+    @Test(priority = 4)
+    public void insertContact() throws IOException, ParseException, InterruptedException {
+        CustomersPage customersPage = new CustomersPage(driver);
+        customersPage.addContacts("testCode123");
+    }
+    @Test(priority = 5)
+    public void addPAyment() throws IOException, ParseException, InterruptedException {
+        CustomersPage customersPage = new CustomersPage(driver);
+        customersPage.addPaymentACH("072403004","856667","Test ACH");
+    }
+    @Test(priority = )
 
 }
